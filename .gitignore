@@ -1,0 +1,4 @@
+*config.env
+*.txt
+node_modules/
+.vscode/
