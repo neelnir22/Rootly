@@ -41,6 +41,13 @@ router
     authController.checkUserVerified,
     userController.accountDeactive
   );
+router
+  .route('/view-past-usernames')
+  .get(
+    authController.protect,
+    authController.checkUserVerified,
+    userController.viewPastUserName
+  );
 
 router
   .route('/verify-my-email')

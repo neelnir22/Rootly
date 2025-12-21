@@ -3,10 +3,12 @@ const Email = require('../models/emailModel');
 const Like = require('../models/likeModel');
 const emailVerify = require('../utils/emailVerify');
 const createJwtToken = require('../utils/createJwtToken');
+const UserName = require('../models/pastUsernameModel');
 
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
 const validator = require('email-validator');
+const dayjs = require('dayjs');
 
 exports.updateUserName = async (req, res, next) => {
   try {
@@ -26,8 +28,17 @@ exports.updateUserName = async (req, res, next) => {
 
     const user = await User.findOne({ _id: payload.id });
 
+    const userName = await UserName.findOne({ user: payload.id });
+
+    userName.userNames.unshift({
+      username: req.body.userName,
+      createdAtDate: dayjs().format('DD-MM-YYYY'),
+      createdAtTime: dayjs().format('HH:mm:ss A'),
+    });
+
     user.userName = req.body.userName;
 
+    await userName.save();
     await user.save();
     return res.status(200).json({
       status: 'success',

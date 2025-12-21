@@ -2,6 +2,7 @@ const User = require('../models/userModel');
 const emailVerify = require('../utils/emailVerify');
 const Email = require('../models/emailModel');
 const createJwtToken = require('../utils/createJwtToken');
+const UserName = require('../models/pastUsernameModel');
 
 const jwtToken = require('jsonwebtoken');
 const validator = require('email-validator');
@@ -36,8 +37,11 @@ exports.getUserByUsername = async (req, res, next) => {
 exports.deleteUser = async (req, res, next) => {
   try {
     const payload = req.payload;
-
     const user = await User.deleteOne({ _id: payload.id });
+
+    res.status(200).json({
+      status: 'success',
+    });
   } catch (err) {
     res.status(400).json({
       status: 'fail',
@@ -90,5 +94,22 @@ exports.accountDeactive = async (req, res) => {
     });
   } catch (err) {
     res.status(400).json({ status: 'fail', message: err.message });
+  }
+};
+
+exports.viewPastUserName = async (req, res, next) => {
+  try {
+    const payload = req.payload;
+    const pastUserNames = await UserName.findOne({ user: payload.id });
+    const userNames = pastUserNames.userNames;
+    res.status(200).json({
+      status: 'success',
+      results: userNames,
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: err.message,
+    });
   }
 };

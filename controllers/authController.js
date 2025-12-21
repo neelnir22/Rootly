@@ -1,12 +1,13 @@
 const validator = require('email-validator');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
+const dayjs = require('dayjs');
 
 const emailVerify = require('../utils/emailVerify');
 const User = require('../models/userModel');
 const Email = require('../models/emailModel');
 const createJwtToken = require('../utils/createJwtToken');
-const deleteOtpWhenExpired = require('../utils/deleteOtpWhenExpired');
+const UserName = require('../models/pastUsernameModel');
 
 exports.signUp = async (req, res, next) => {
   try {
@@ -25,6 +26,15 @@ exports.signUp = async (req, res, next) => {
       snapChat: req.body.snapChat,
     });
     const token = createJwtToken(newUser);
+    // adding user username to database
+    await UserName.create({
+      userNames: {
+        username: req.body.userName,
+        createdAtDate: dayjs().format('DD-MM-YYYY'),
+        createdAtTime: dayjs().format('HH:mm:ss A'),
+      },
+      user: newUser._id,
+    });
 
     emailVerify({
       email: req.body.email,
