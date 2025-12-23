@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const path = require('path');
+
 const userRouter = require('./routes/userRoutes');
 const profileRouter = require('./routes/profileRoutes');
 
@@ -14,6 +15,9 @@ const DB = process.env.DATABASE.replace(
   '<db_password>',
   process.env.DATABASE_PASSWORD
 );
+
+const deleteOtpWhenExpired = require('./utils/deleteOtpWhenExpired');
+const deleteUserWhenExpired = require('./utils/deleteWhenUserDeactivate');
 // body parser(convert krta hai jsonn data ko js object mein)
 app.use(
   express.json({

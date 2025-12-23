@@ -5,7 +5,6 @@ const passwordSchema = new mongoose.Schema({
     ref: 'User',
   },
   oldpasswords: [String],
-  createdAt: String,
 });
 
 const oldPassword = mongoose.model('oldPassword', passwordSchema);

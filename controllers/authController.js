@@ -43,15 +43,17 @@ exports.signUp = async (req, res, next) => {
     await oldPassword.create({
       user: newUser._id,
       oldpasswords: await argon.hash(req.body.password),
-      createdAt: dayjs().format('DD-MM-YYYY-HH:mm:ss A'),
     });
+
     emailVerify({
       email: req.body.email,
       subject: 'Email Verification',
       text: `Verify your email by using this otp`,
       userId: newUser._id,
     });
+
     newUser.password = undefined;
+
     res.status(200).json({
       status: 'success',
       token,
