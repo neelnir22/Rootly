@@ -2,12 +2,16 @@ const validator = require('email-validator');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const dayjs = require('dayjs');
+const argon = require('argon2');
 
 const emailVerify = require('../utils/emailVerify');
 const User = require('../models/userModel');
 const Email = require('../models/emailModel');
 const createJwtToken = require('../utils/createJwtToken');
 const UserName = require('../models/pastUsernameModel');
+const oldPassword = require('../models/oldPasswordModel');
+
+// const { oldPassword } = require('./userController');
 
 exports.signUp = async (req, res, next) => {
   try {
@@ -36,6 +40,11 @@ exports.signUp = async (req, res, next) => {
       user: newUser._id,
     });
 
+    await oldPassword.create({
+      user: newUser._id,
+      oldpasswords: await argon.hash(req.body.password),
+      createdAt: dayjs().format('DD-MM-YYYY-HH:mm:ss A'),
+    });
     emailVerify({
       email: req.body.email,
       subject: 'Email Verification',
@@ -145,13 +154,13 @@ exports.forgotPassword = async (req, res, next) => {
 
 exports.changePasswordAfterForgot = async (req, res, next) => {
   try {
-    const { otp, password } = req.body;
+    const { otp, newPassword } = req.body;
     // console.log({ otp, password });
     if (otp.length < 6 || !(typeof otp === 'string')) {
       throw new Error('provide correct otp');
     }
 
-    if (password.length < 8) {
+    if (newPassword.length < 8) {
       throw new Error('password should be greater than or equals to 8 letters');
     }
 
@@ -165,6 +174,20 @@ exports.changePasswordAfterForgot = async (req, res, next) => {
       throw new Error('otp has been expired , go get new one');
     }
     const user = await User.findOne({ email: otpDetails.email });
+
+    const userOldPassword = await oldPassword.findOne({
+      user: otpDetails.userId,
+    });
+
+    for (let i = 0; i < userOldPassword.oldpasswords.length; i++) {
+      if (await argon.verify(userOldPassword.oldpasswords[i], newPassword)) {
+        throw new Error('you cant set previous passwords');
+      }
+    }
+
+    userOldPassword.oldpasswords.push(await argon.hash(password));
+
+    await userOldPassword.save();
 
     user.password = password;
 
@@ -187,7 +210,7 @@ exports.resetPassword = async (req, res, next) => {
     // console.log(validatedUser.email);
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) {
-      throw new Error('Please provide email, currentPassword,newPassword');
+      throw new Error('Please provide currentPassword,newPassword');
     }
 
     if (currentPassword === newPassword) {
@@ -207,7 +230,23 @@ exports.resetPassword = async (req, res, next) => {
     ) {
       throw new Error('either email or currentPassword is incorrect');
     }
+
+    const userOldPassword = await oldPassword.findOne({
+      user: payload.id,
+    });
+
+    for (let i = 0; i < userOldPassword.oldpasswords.length; i++) {
+      if (await argon.verify(userOldPassword.oldpasswords[i], newPassword)) {
+        throw new Error('you cant set previous passwords');
+      }
+    }
+
+    userOldPassword.oldpasswords.push(await argon.hash(newPassword));
+
+    await userOldPassword.save();
+
     user.password = newPassword;
+
     await user.save();
     res.status(200).json({
       status: 'success',
