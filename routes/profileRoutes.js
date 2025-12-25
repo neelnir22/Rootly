@@ -2,6 +2,7 @@ const express = require('express');
 const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
 const profileController = require('../controllers/profileController');
+const linkController = require('../controllers/linkController');
 const router = express.Router();
 
 router
@@ -55,4 +56,32 @@ router
     profileController.deleteLink
   );
 
+router
+  .route('/short-link')
+  .post(
+    authController.protect,
+    authController.checkUserVerified,
+    linkController.linkShortner
+  );
+router
+  .route('/update-short-link')
+  .patch(
+    authController.protect,
+    authController.checkUserVerified,
+    linkController.updateLinkShortner
+  );
+router
+  .route('/get-short-links')
+  .get(
+    authController.protect,
+    authController.checkUserVerified,
+    linkController.getShortLink
+  );
+router
+  .route('/delete-short-links')
+  .patch(
+    authController.protect,
+    authController.checkUserVerified,
+    linkController.deleteShortLink
+  );
 module.exports = router;
