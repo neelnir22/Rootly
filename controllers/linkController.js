@@ -4,8 +4,8 @@ const Like = require('../models/likeModel');
 const UserName = require('../models/pastUsernameModel');
 const linkShortner = require('../models/linkShortnerModel');
 
-const linkCheck = require('link-check');
 const randomString = require('random-string-generator');
+const domainName = 'root.ly';
 
 exports.linkShortner = async (req, res) => {
   try {
@@ -13,29 +13,18 @@ exports.linkShortner = async (req, res) => {
       throw new Error('only link can shorten here');
     }
 
-    linkCheck(
-      req.body.link,
-      { headers: { Authorization: 'Basic Zm9vOmJhcg==' } },
-      function (err, result) {
-        if (err) {
-          throw new Error('Invalid Link');
-        }
-      }
-    );
-
     const shortenLinkCode = randomString(7, 'upper');
 
     await linkShortner.create({
       user: req.payload.id,
       refLink: req.body.link,
       code: shortenLinkCode,
-      shortLink: `root.ly/${shortenLinkCode}`,
     });
 
     res.status(200).json({
       status: 'success',
       message: 'successfully shorten the given link',
-      result: `root.ly/${shortenLinkCode}`,
+      result: `${domainName}/${shortenLinkCode}`,
     });
   } catch (err) {
     res.status(400).json({
@@ -68,15 +57,6 @@ exports.updateLinkShortner = async (req, res) => {
     }
     // root.ly/VVIUZJA
     if (link) {
-      linkCheck(
-        req.body.link,
-        { headers: { Authorization: 'Basic Zm9vOmJhcg==' } },
-        function (err, result) {
-          if (err) {
-            throw new Error('Invalid Link');
-          }
-        }
-      );
       shortLink.refLink = link;
     }
 
@@ -88,7 +68,6 @@ exports.updateLinkShortner = async (req, res) => {
       }
 
       shortLink.code = updatedCode;
-      shortLink.shortLink = `root.ly/${updatedCode}`;
     }
 
     await shortLink.save();
@@ -97,7 +76,6 @@ exports.updateLinkShortner = async (req, res) => {
       status: 'success',
       message: 'link updated succesfully',
       result: {
-        shortLink: `${shortLink.shortLink}`,
         refLink: shortLink.refLink,
       },
     });
@@ -109,7 +87,7 @@ exports.updateLinkShortner = async (req, res) => {
   }
 };
 
-exports.getShortLink = async (req, res) => {
+exports.getShortLinks = async (req, res) => {
   try {
     const payload = req.payload;
     const shortLinks = await linkShortner.find({ user: payload.id });
@@ -128,28 +106,24 @@ exports.getShortLink = async (req, res) => {
   }
 };
 
-exports.deleteShortLink = async (req, res) => {
+exports.viewSingleShortLink = async (req, res) => {
   try {
-    const payload = req.payload;
+    const { shortLinkCode } = req.params.shortLinkCode;
 
-    const { shortLink } = req.body;
-
-    const shortenLinkCode = shortLink.split('/')[1];
-
-    const shortLinks = await linkShortner.findOne({ code: shortenLinkCode });
-
-    if (!shortLinks) {
-      throw new Error('link cant be found on our server');
+    if (!shortLinkCode) {
+      throw new Error('you cant use this route for given param');
     }
 
-    await linkShortner.deleteOne({
-      user: payload.id,
-      code: shortenLinkCode,
-    });
+    const shortedLink = await linkShortner.findOne({ code: shortenLinkCode });
+    if (!shortedLink) {
+      throw new Error('cant find given link on our servers');
+    }
 
-    res.status(200).json({
-      status: 'success',
-    });
+    shortedLink.viewCount += 1;
+
+    await shortedLink.save();
+
+    res.redirect(302, shortedLink.refLink);
   } catch (err) {
     res.status(400).json({
       status: 'fail',

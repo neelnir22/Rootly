@@ -75,13 +75,14 @@ router
   .get(
     authController.protect,
     authController.checkUserVerified,
-    linkController.getShortLink
+    linkController.getShortLinks
   );
 router
-  .route('/delete-short-links')
-  .patch(
+  .route('/view-short-link/:shortLinkCode')
+  .get(
     authController.protect,
     authController.checkUserVerified,
-    linkController.deleteShortLink
+    linkController.viewSingleShortLink
   );
+
 module.exports = router;

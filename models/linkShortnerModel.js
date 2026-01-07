@@ -6,7 +6,6 @@ const linkSchema = new mongoose.Schema({
     ref: 'User',
   },
   code: String,
-  shortLink: String,
   refLink: String,
   viewCount: { type: Number, default: 0 },
 });
