@@ -10,6 +10,7 @@ const Email = require('../models/emailModel');
 const createJwtToken = require('../utils/createJwtToken');
 const UserName = require('../models/pastUsernameModel');
 const oldPassword = require('../models/oldPasswordModel');
+const generateOgImages = require('../utils/generateOgImages');
 
 // const { oldPassword } = require('./userController');
 
@@ -28,8 +29,19 @@ exports.signUp = async (req, res, next) => {
       youTube: req.body.youTube,
       tiktok: req.body.tiktok,
       snapChat: req.body.snapChat,
+      links: req.body.links,
     });
     const token = createJwtToken(newUser);
+
+    if (req.body.instagram) generateOgImages(req.body.instagram);
+    if (req.body.twitter) generateOgImages(req.body.twitter);
+    if (req.body.linkedin) generateOgImages(req.body.linkedin);
+    if (req.body.gmail) generateOgImages(req.body.gmail);
+    if (req.body.youTube) generateOgImages(req.body.youTube);
+    if (req.body.tiktok) generateOgImages(req.body.tiktok);
+    if (req.body.snapChat) generateOgImages(req.body.snapChat);
+    if (req.body.links) generateOgImages(req.body.links);
+
     // adding user username to database
     await UserName.create({
       userNames: {
@@ -129,7 +141,7 @@ exports.forgotPassword = async (req, res, next) => {
     const user = await User.findOne({ email });
     if (!user) {
       throw new Error(
-        'there is no such user related to the email you have provided'
+        'there is no such user related to the email you have provided',
       );
     }
 
@@ -224,7 +236,7 @@ exports.resetPassword = async (req, res, next) => {
     }
 
     const user = await User.findOne({ _id: payload.id }).select(
-      '+currentPassword'
+      '+currentPassword',
     );
     if (
       !user ||
@@ -267,7 +279,7 @@ exports.emailVerifyUpdate = async (req, res, next) => {
     const otp = req.body.otp;
     if (!otp) {
       throw new Error(
-        'there is no otp! please provide an otp for email verification'
+        'there is no otp! please provide an otp for email verification',
       );
     }
 
@@ -288,7 +300,7 @@ exports.emailVerifyUpdate = async (req, res, next) => {
       user.emailVerified = true;
     } else {
       throw new Error(
-        'Otp is invalid,Please write the correct otp for verification'
+        'Otp is invalid,Please write the correct otp for verification',
       );
     }
     await user.save();

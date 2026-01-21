@@ -108,7 +108,8 @@ exports.getShortLinks = async (req, res) => {
 
 exports.viewSingleShortLink = async (req, res) => {
   try {
-    const { shortLinkCode } = req.params.shortLinkCode;
+    const { shortLinkCode } = req.params.code;
+    console.log(shortLinkCode);
 
     if (!shortLinkCode) {
       throw new Error('you cant use this route for given param');

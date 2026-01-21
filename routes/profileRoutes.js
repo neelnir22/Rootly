@@ -10,7 +10,7 @@ router
   .patch(
     authController.protect,
     authController.checkUserVerified,
-    profileController.updateLikeCount
+    profileController.updateLikeCount,
   );
 
 router
@@ -18,42 +18,42 @@ router
   .patch(
     authController.protect,
     authController.checkUserVerified,
-    profileController.updateUserName
+    profileController.updateUserName,
   );
 router
   .route('/Name')
   .patch(
     authController.protect,
     authController.checkUserVerified,
-    profileController.updateName
+    profileController.updateName,
   );
 router
   .route('/email')
   .patch(
     authController.protect,
     authController.checkUserVerified,
-    profileController.updateEmail
+    profileController.updateEmail,
   );
 router
   .route('/logo')
   .patch(
     authController.protect,
     authController.checkUserVerified,
-    profileController.updateLogo
+    profileController.updateLogo,
   );
 router
   .route('/add-Links')
   .patch(
     authController.protect,
     authController.checkUserVerified,
-    profileController.updateExternalLink
+    profileController.updateExternalLink,
   );
 router
   .route('/delete-link')
   .patch(
     authController.protect,
     authController.checkUserVerified,
-    profileController.deleteLink
+    profileController.deleteLink,
   );
 
 router
@@ -61,28 +61,28 @@ router
   .post(
     authController.protect,
     authController.checkUserVerified,
-    linkController.linkShortner
+    linkController.linkShortner,
   );
 router
   .route('/update-short-link')
   .patch(
     authController.protect,
     authController.checkUserVerified,
-    linkController.updateLinkShortner
+    linkController.updateLinkShortner,
   );
 router
   .route('/get-short-links')
   .get(
     authController.protect,
     authController.checkUserVerified,
-    linkController.getShortLinks
+    linkController.getShortLinks,
   );
 router
-  .route('/view-short-link/:shortLinkCode')
+  .route('/view-short-link/:code')
   .get(
     authController.protect,
     authController.checkUserVerified,
-    linkController.viewSingleShortLink
+    linkController.viewSingleShortLink,
   );
 
 module.exports = router;
