@@ -3,6 +3,7 @@ const Email = require('../models/emailModel');
 const Like = require('../models/likeModel');
 const UserName = require('../models/pastUsernameModel');
 const linkShortner = require('../models/linkShortnerModel');
+const ogImagesModel = require('../models/ogImagesModel');
 
 const randomString = require('random-string-generator');
 const domainName = 'root.ly';
@@ -125,6 +126,25 @@ exports.viewSingleShortLink = async (req, res) => {
     await shortedLink.save();
 
     res.redirect(302, shortedLink.refLink);
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: err.message,
+    });
+  }
+};
+
+exports.viewSingleLink = async (req, res) => {
+  try {
+    const payload = req.payload;
+    const { url } = req.body;
+    const LinkData = await ogImagesModel.findOne(
+      { userId: payload.id },
+      { url: url },
+    );
+    res.status(200).json({
+      LinkData,
+    });
   } catch (err) {
     res.status(400).json({
       status: 'fail',

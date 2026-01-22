@@ -15,7 +15,7 @@ router
   .patch(
     authController.protect,
     authController.checkUserVerified,
-    profileController.updateLikeCount
+    profileController.updateLikeCount,
   );
 router
   .route('/forgot-password-change')
@@ -25,31 +25,36 @@ router
   .patch(
     authController.protect,
     authController.checkUserVerified,
-    authController.resetPassword
+    authController.resetPassword,
   );
 router
   .route('/delete-user')
   .delete(
     authController.protect,
     authController.checkUserVerified,
-    userController.deleteUser
+    userController.deleteUser,
   );
 router
   .route('/deactive-user')
   .patch(
     authController.protect,
     authController.checkUserVerified,
-    userController.accountDeactive
+    userController.accountDeactive,
   );
 router
   .route('/view-past-usernames')
   .get(
     authController.protect,
     authController.checkUserVerified,
-    userController.viewPastUserName
+    userController.viewPastUserName,
   );
 
 router
   .route('/verify-my-email')
   .post(authController.protect, userController.verifyMyEmail);
+
+router
+  .route('/view-profile')
+  .get(authController.protect, userController.seeOwnProfile);
+
 module.exports = router;

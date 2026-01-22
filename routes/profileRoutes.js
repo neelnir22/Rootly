@@ -85,4 +85,12 @@ router
     linkController.viewSingleShortLink,
   );
 
+router
+  .route('/view-single-link')
+  .get(
+    authController.protect,
+    authController.checkUserVerified,
+    linkController.viewSingleLink,
+  );
+
 module.exports = router;

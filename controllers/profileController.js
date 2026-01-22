@@ -4,11 +4,14 @@ const Like = require('../models/likeModel');
 const emailVerify = require('../utils/emailVerify');
 const createJwtToken = require('../utils/createJwtToken');
 const UserName = require('../models/pastUsernameModel');
+const generateOgImages = require('../utils/generateOgImages');
+const ogImagesModel = require('../models/ogImagesModel');
 
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
 const validator = require('email-validator');
 const dayjs = require('dayjs');
+const ogImages = require('../utils/generateOgImages');
 
 exports.updateUserName = async (req, res, next) => {
   try {
@@ -157,20 +160,27 @@ exports.updateLogo = async (req, res, next) => {
 exports.updateExternalLink = async (req, res, next) => {
   try {
     const payload = req.payload;
-    const { instagram, twitter, linkedin, gmail, tiktok, snapChat, links } =
-      req.body;
+    const { links } = req.body;
 
     const user = await User.findOne({ _id: payload.id });
 
-    if (instagram) user.instagram = req.body.instagram;
-    if (twitter) user.twitter = req.body.twitter;
-    if (linkedin) user.linkedin = req.body.linkedin;
-    if (gmail) user.gmail = req.body.gmail;
-    if (tiktok) user.tiktok = req.body.tiktok;
-    if (snapChat) user.snapChat = req.body.snapChat;
-    if (links) user.links.push(links);
+    const ogImageDetails = await generateOgImages(links, links, user._id);
 
-    await user.save();
+    const ogImage = await ogImagesModel.findOne({ _id: user.links });
+
+    if (ogImage) {
+      ogImage.links.push(ogImageDetails);
+
+      await ogImage.save();
+    }
+    if (!ogImage) {
+      const ogImageDetails = await ogImages(links);
+      const newOgImage = await ogImagesModel.create({
+        links: ogImageDetails,
+      });
+      user.links = newOgImage._id;
+      await user.save();
+    }
 
     res.status(200).json({
       status: 'success',
@@ -246,39 +256,26 @@ exports.deleteLink = async (req, res, next) => {
       throw new Error('provide a link to delete');
     }
 
-    const { instagram, linkedin, twitter, gmail, tiktok, snapChat, links } =
-      req.body;
+    const { links } = req.body;
 
     const user = await User.findOne({ _id: payload.id });
+    const ogImage = await ogImagesModel.findOne({ _id: user.links });
 
-    if (user.instagram || instagram) {
-      await User.updateOne({ _id: payload.id }, { $unset: { instagram: ' ' } });
+    if (!ogImage) {
+      throw new Error('No OgImage found ');
     }
 
-    if (user.linkedin || linkedin) {
-      await User.updateOne({ _id: payload.id }, { $unset: { linkedin: ' ' } });
-    }
-
-    if (user.twitter || twitter) {
-      await User.updateOne({ _id: payload.id }, { $unset: { twitter: ' ' } });
-    }
-
-    if (user.gmail || gmail) {
-      await User.updateOne({ _id: payload.id }, { $unset: { gmail: ' ' } });
-    }
-
-    if (user.tiktok || tiktok) {
-      await User.updateOne({ _id: payload.id }, { $unset: { tiktok: ' ' } });
-    }
-
-    if (user.snapChat || snapChat) {
-      await User.updateOne({ _id: payload.id }, { $unset: { snapChat: ' ' } });
-    }
-
-    if (user.links || links) {
-      console.log({ 0: req.body.links - 1, 1: req.body.links });
-      user.links.splice(req.body.links, 1);
-      await user.save();
+    if (ogImage.links || links) {
+      ogImagesModel.links.forEach((element) => {
+        console.log(element);
+        if ((element.url = links)) {
+          const index = ogImage.links.indexOf(element);
+          ogImage.links.splice(index, 1);
+        } else {
+          throw new Error('link not found');
+        }
+      });
+      ogImage.save();
     }
 
     res.status(200).json({

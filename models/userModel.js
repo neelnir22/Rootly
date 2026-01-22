@@ -47,17 +47,10 @@ const userSchema = new mongoose.Schema({
     required: [true, 'User Must provide a username'],
     unique: true,
   },
-  instagram: {
-    type: String,
-  },
-  twitter: String,
-  linkedin: String,
-  gmail: String,
-  youTube: String,
-  tiktok: String,
-  snapChat: String,
+
   links: {
-    type: [String],
+    type: mongoose.Schema.ObjectId,
+    ref: 'ogImagesModel',
   },
   likeCount: {
     type: Number,

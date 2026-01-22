@@ -11,36 +11,30 @@ const createJwtToken = require('../utils/createJwtToken');
 const UserName = require('../models/pastUsernameModel');
 const oldPassword = require('../models/oldPasswordModel');
 const generateOgImages = require('../utils/generateOgImages');
+const ogImagesModel = require('../models/ogImagesModel');
 
 // const { oldPassword } = require('./userController');
 
 exports.signUp = async (req, res, next) => {
   try {
+    const OgImageDetails = await generateOgImages(req.body.links);
+    console.log({ OgImageDetails });
+
+    const ogImage = await ogImagesModel.create({
+      links: OgImageDetails,
+    });
+
+    // console.log(ogImage._id);
+
     const newUser = await User.create({
       firstName: req.body.firstName,
       lastName: req.body.lastName,
       email: req.body.email,
       userName: req.body.userName,
       password: req.body.password,
-      instagram: req.body.instagram,
-      twitter: req.body.twitter,
-      linkedin: req.body.linkedin,
-      gmail: req.body.gmail,
-      youTube: req.body.youTube,
-      tiktok: req.body.tiktok,
-      snapChat: req.body.snapChat,
-      links: req.body.links,
+      links: ogImage._id,
     });
     const token = createJwtToken(newUser);
-
-    if (req.body.instagram) generateOgImages(req.body.instagram);
-    if (req.body.twitter) generateOgImages(req.body.twitter);
-    if (req.body.linkedin) generateOgImages(req.body.linkedin);
-    if (req.body.gmail) generateOgImages(req.body.gmail);
-    if (req.body.youTube) generateOgImages(req.body.youTube);
-    if (req.body.tiktok) generateOgImages(req.body.tiktok);
-    if (req.body.snapChat) generateOgImages(req.body.snapChat);
-    if (req.body.links) generateOgImages(req.body.links);
 
     // adding user username to database
     await UserName.create({
