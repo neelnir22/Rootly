@@ -6,7 +6,7 @@ const ogImages = (url) => {
   try {
     const results = Promise.all(
       url.map(async (newUrl) => {
-        console.log({ newUrl });
+        // console.log({ newUrl });
         const $parsedHtml = await cheerio.fromURL(newUrl);
 
         if (!$parsedHtml) {

@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 
 const userRouter = require('./routes/userRoutes');
 const profileRouter = require('./routes/profileRoutes');
@@ -13,16 +14,18 @@ app.use(express.static(`${__dirname}/public`));
 dotenv.config({ path: path.join(__dirname, '/config.env') });
 const DB = process.env.DATABASE.replace(
   '<db_password>',
-  process.env.DATABASE_PASSWORD
+  process.env.DATABASE_PASSWORD,
 );
 
 const deleteOtpWhenExpired = require('./utils/deleteOtpWhenExpired');
 const deleteUserWhenExpired = require('./utils/deleteWhenUserDeactivate');
 // body parser(convert krta hai jsonn data ko js object mein)
+app.use(cookieParser());
+
 app.use(
   express.json({
     limit: '10kb',
-  })
+  }),
 );
 
 app.use('/api/v1/users', userRouter);

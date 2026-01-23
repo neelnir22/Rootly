@@ -119,9 +119,11 @@ exports.updateEmail = async (req, res) => {
 
     const token = createJwtToken(user);
 
+    res.cookie('jwt', token[0], token[1]);
+
     res.status(200).json({
       status: 'success',
-      token,
+      token: token[0],
       message: 'email has been successfully changed, please verify it again',
     });
   } catch (err) {

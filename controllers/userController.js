@@ -153,3 +153,40 @@ exports.seeOwnProfile = async (req, res) => {
     });
   }
 };
+
+exports.downloadUserData = async (req, res) => {
+  try {
+    const payload = req.payload;
+
+    const user = await User.findOne({ _id: payload.id }).populate('links');
+
+    const linkShort = await linkShortnerModel.findOne({ user: user._id });
+
+    const likes = await likeModel.find({ from: user._id });
+
+    const pastUserName = await pastUsernameModel.findOne({ user: user._id });
+
+    // headers to be set to give instructions to the browser
+    res.setHeader('Content-Disposition', 'attachment; filename="data.json"');
+
+    res.setHeader('Content-Type', 'application/json');
+
+    let userData = JSON.stringify(
+      {
+        ...user,
+        ...linkShort,
+        ...likes,
+        ...pastUserName.userNames,
+      },
+      null,
+      2,
+    );
+
+    res.send(userData);
+  } catch (err) {
+    res.status(200).json({
+      status: 'fail',
+      message: err.message,
+    });
+  }
+};

@@ -18,7 +18,7 @@ const ogImagesModel = require('../models/ogImagesModel');
 exports.signUp = async (req, res, next) => {
   try {
     const OgImageDetails = await generateOgImages(req.body.links);
-    console.log({ OgImageDetails });
+    // console.log({ OgImageDetails });
 
     const ogImage = await ogImagesModel.create({
       links: OgImageDetails,
@@ -34,7 +34,9 @@ exports.signUp = async (req, res, next) => {
       password: req.body.password,
       links: ogImage._id,
     });
+
     const token = createJwtToken(newUser);
+    console.log({ token: token[0] });
 
     // adding user username to database
     await UserName.create({
@@ -51,18 +53,20 @@ exports.signUp = async (req, res, next) => {
       oldpasswords: await argon.hash(req.body.password),
     });
 
-    emailVerify({
-      email: req.body.email,
-      subject: 'Email Verification',
-      text: `Verify your email by using this otp`,
-      userId: newUser._id,
-    });
+    // emailVerify({
+    //   email: req.body.email,
+    //   subject: 'Email Verification',
+    //   text: `Verify your email by using this otp`,
+    //   userId: newUser._id,
+    // });
 
     newUser.password = undefined;
 
+    res.cookie('jwt', token[0], token[1]);
+
     res.status(200).json({
       status: 'success',
-      token,
+      token: token[0],
       message: `welcome to our family ${
         newUser.firstName + newUser.lastName
       }, Please check your mail for Email Verification`,
@@ -105,9 +109,11 @@ exports.login = async (req, res, next) => {
     user.password = undefined;
     const token = createJwtToken(user);
 
+    res.cookie('jwt', token[0], token[1]);
+
     res.status(200).json({
       status: 'Success',
-      token,
+      token: token[0],
       message: `Welcome Back ${
         user.firstName + user.lastName
       }, Good to See You`,
@@ -301,9 +307,11 @@ exports.emailVerifyUpdate = async (req, res, next) => {
     // Xr0LKEM0
     const token = createJwtToken(user);
 
+    res.cookie('jwt', token[0], token[1]);
+
     res.status(200).json({
       status: 'success',
-      token,
+      token: token[0],
       message: `Email has verified`,
     });
   } catch (err) {

@@ -57,4 +57,11 @@ router
   .route('/view-profile')
   .get(authController.protect, userController.seeOwnProfile);
 
+router
+  .route('/download-user-data')
+  .get(
+    authController.protect,
+    authController.checkUserVerified,
+    userController.downloadUserData,
+  );
 module.exports = router;
